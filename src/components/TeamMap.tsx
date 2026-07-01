@@ -1,0 +1,111 @@
+import React from 'react';
+import { Platform, StyleSheet, Text, View } from 'react-native';
+import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import { useData } from '@/context/DataContext';
+import { useLocations } from '@/context/LocationContext';
+import { colors, radius } from '@/theme/theme';
+
+interface Props {
+  focusMemberId?: string; // if set, only show this member + their jobs
+}
+
+const AARHUS_REGION = {
+  latitude: 56.1567,
+  longitude: 10.2108,
+  latitudeDelta: 0.08,
+  longitudeDelta: 0.08,
+};
+
+export function TeamMap({ focusMemberId }: Props) {
+  const { members, jobs, memberById } = useData();
+  const { pings } = useLocations();
+
+  const shownMembers = focusMemberId
+    ? members.filter((m) => m.id === focusMemberId)
+    : members;
+
+  const shownJobs = focusMemberId
+    ? jobs.filter((j) => j.assignedToId === focusMemberId && j.status !== 'done')
+    : jobs.filter((j) => j.status !== 'done');
+
+  return (
+    <View style={styles.container}>
+      <MapView
+        style={StyleSheet.absoluteFill}
+        provider={PROVIDER_DEFAULT}
+        initialRegion={AARHUS_REGION}
+        showsUserLocation={false}
+      >
+        {/* Job site pins */}
+        {shownJobs.map((job) => (
+          <Marker
+            key={job.id}
+            coordinate={job.location}
+            title={job.title}
+            description={`${job.customerName} · ${job.address}`}
+            pinColor={job.status === 'in_progress' ? colors.statusInProgress : colors.priorityNormal}
+          />
+        ))}
+
+        {/* Live team member markers */}
+        {shownMembers.map((member) => {
+          const ping = pings[member.id];
+          if (!ping) return null;
+          return (
+            <Marker
+              key={member.id}
+              coordinate={ping.coordinate}
+              title={member.name}
+              description={member.title}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View style={[styles.memberMarker, { backgroundColor: member.avatarColor }]}>
+                <Text style={styles.memberInitials}>
+                  {member.name
+                    .split(' ')
+                    .map((p) => p[0])
+                    .slice(0, 2)
+                    .join('')}
+                </Text>
+              </View>
+            </Marker>
+          );
+        })}
+      </MapView>
+
+      {Platform.OS === 'web' && (
+        <View style={styles.webNote}>
+          <Text style={styles.webNoteText}>Kortet vises bedst i Expo Go på iPhone.</Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.fill },
+  memberMarker: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 2.5,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  memberInitials: { color: colors.textInverse, fontSize: 12, fontWeight: '700' },
+  webNote: {
+    position: 'absolute',
+    top: 12,
+    alignSelf: 'center',
+    backgroundColor: colors.card,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: radius.pill,
+  },
+  webNoteText: { fontSize: 13, color: colors.textSecondary },
+});

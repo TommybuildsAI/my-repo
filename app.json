@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "VVS Hold",
+    "slug": "vvs-holdapp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "vvshold",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A84FF"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "dk.vvshold.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "VVS Hold bruger din placering til at vise dig på holdets kort og finde nærmeste opgaver."
+      }
+    },
+    "android": {
+      "package": "dk.vvshold.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0A84FF"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "VVS Hold bruger din placering til at vise dig på holdets kort og finde nærmeste opgaver."
+        }
+      ],
+      "expo-font",
+      "expo-asset"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
