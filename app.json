@@ -48,6 +48,16 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "mapsKeyConfigured": false,
+      "eas": {
+        "projectId": "8c202c9a-7ae3-4c3b-b24b-6d88ed3bc9eb"
+      },
+      "router": {
+        "origin": false
+      }
+    },
+    "owner": "tommyyest"
   }
 }
