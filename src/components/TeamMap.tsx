@@ -1,8 +1,10 @@
 import React from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import Constants from 'expo-constants';
 import { useData } from '@/context/DataContext';
 import { useLocations } from '@/context/LocationContext';
+import { MapFallback } from '@/components/MapFallback';
 import { colors, radius } from '@/theme/theme';
 
 interface Props {
@@ -16,6 +18,17 @@ const AARHUS_REGION = {
   longitudeDelta: 0.08,
 };
 
+/**
+ * Whether the interactive map can render. iOS uses Apple Maps (always works);
+ * Expo Go on Android ships its own key (appOwnership === 'expo'); a standalone
+ * Android APK only works if a Google Maps key was configured at build time.
+ */
+function canRenderMap(): boolean {
+  if (Platform.OS !== 'android') return true;
+  if (Constants.appOwnership === 'expo') return true; // Expo Go
+  return Boolean(Constants.expoConfig?.extra?.mapsKeyConfigured);
+}
+
 export function TeamMap({ focusMemberId }: Props) {
   const { members, jobs, memberById } = useData();
   const { pings } = useLocations();
@@ -27,6 +40,10 @@ export function TeamMap({ focusMemberId }: Props) {
   const shownJobs = focusMemberId
     ? jobs.filter((j) => j.assignedToId === focusMemberId && j.status !== 'done')
     : jobs.filter((j) => j.status !== 'done');
+
+  if (!canRenderMap()) {
+    return <MapFallback members={shownMembers} jobs={shownJobs} />;
+  }
 
   return (
     <View style={styles.container}>
