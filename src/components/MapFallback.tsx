@@ -1,11 +1,13 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import type { Job, TeamMember } from '@/types/models';
 import { useLocations } from '@/context/LocationContext';
 import { Avatar } from '@/components/ui/Avatar';
 import { StatusBadge } from '@/components/StatusBadge';
-import { colors, radius, spacing } from '@/theme/theme';
+import { ListSection, ListRow, Cell } from '@/components/ui/List';
+import { colors, spacing, type } from '@/theme/theme';
 
 interface Props {
   members: TeamMember[];
@@ -13,99 +15,84 @@ interface Props {
 }
 
 /**
- * Shown instead of the interactive map on standalone Android builds that have
- * no Google Maps API key configured. Presents the same live data (team members
- * with their moving coordinates + job sites) as an iOS-styled list, so the tab
- * is still useful without a key.
+ * Shown instead of the interactive map on standalone Android builds with no
+ * Google Maps key. Presents the same live data as iOS grouped lists.
  */
 export function MapFallback({ members, jobs }: Props) {
   const { pings } = useLocations();
+  const insets = useSafeAreaInsets();
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md }]}
+    >
       <View style={styles.note}>
         <Ionicons name="information-circle" size={18} color={colors.primary} />
-        <Text style={styles.noteText}>
-          Live-listevisning. Tilføj en Google Maps-nøgle for det interaktive kort på Android.
+        <Text style={[type.footnote, styles.noteText]}>
+          Live-liste. Tilføj en Google Maps-nøgle for det interaktive kort på Android.
         </Text>
       </View>
 
-      <Text style={styles.sectionLabel}>HOLDET LIGE NU</Text>
-      {members.map((m) => {
-        const ping = pings[m.id];
-        return (
-          <View key={m.id} style={styles.row}>
-            <Avatar name={m.name} color={m.avatarColor} size={40} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.name}>{m.name}</Text>
-              <Text style={styles.coord}>
-                {ping
+      <ListSection header="Holdet lige nu" separatorInset={64}>
+        {members.map((m) => {
+          const ping = pings[m.id];
+          return (
+            <ListRow
+              key={m.id}
+              leading={<Avatar name={m.name} color={m.avatarColor} size={36} />}
+              title={m.name}
+              subtitle={
+                ping
                   ? `${ping.coordinate.latitude.toFixed(4)}, ${ping.coordinate.longitude.toFixed(4)}`
-                  : 'Ingen position'}
+                  : 'Ingen position'
+              }
+              rightNode={<Ionicons name="navigate" size={16} color={colors.tertiaryLabel} />}
+            />
+          );
+        })}
+      </ListSection>
+
+      <ListSection header="Opgaver på kortet" separatorInset={58}>
+        {jobs.map((j) => (
+          <Cell key={j.id}>
+            <View style={[styles.pin, { backgroundColor: colors.primary }]}>
+              <Ionicons name="location" size={16} color={colors.white} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={type.body} numberOfLines={1}>
+                {j.title}
+              </Text>
+              <Text style={[type.footnote, styles.addr]} numberOfLines={1}>
+                {j.address}
               </Text>
             </View>
-            <Ionicons name="navigate" size={16} color={colors.textTertiary} />
-          </View>
-        );
-      })}
-
-      <Text style={styles.sectionLabel}>OPGAVER PÅ KORTET</Text>
-      {jobs.map((j) => (
-        <View key={j.id} style={styles.row}>
-          <View style={styles.pin}>
-            <Ionicons name="location" size={18} color={colors.textInverse} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{j.title}</Text>
-            <Text style={styles.coord} numberOfLines={1}>
-              {j.address}
-            </Text>
-          </View>
-          <StatusBadge status={j.status} />
-        </View>
-      ))}
+            <StatusBadge status={j.status} />
+          </Cell>
+        ))}
+      </ListSection>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  container: { flex: 1, backgroundColor: colors.groupedBackground },
+  content: { paddingTop: spacing.md, paddingBottom: spacing.xxl },
   note: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: colors.primary + '14',
-    padding: spacing.md,
-    borderRadius: radius.md,
-    marginBottom: spacing.lg,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
   },
-  noteText: { flex: 1, fontSize: 13, color: colors.textSecondary },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textTertiary,
-    marginBottom: spacing.sm,
-    marginTop: spacing.sm,
-    marginLeft: spacing.xs,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.card,
-    padding: spacing.md,
-    borderRadius: radius.md,
-    marginBottom: spacing.sm,
-  },
-  name: { fontSize: 16, fontWeight: '600', color: colors.text },
-  coord: { fontSize: 13, color: colors.textTertiary, marginTop: 1 },
+  noteText: { flex: 1, color: colors.secondaryLabel },
   pin: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.priorityNormal,
+    width: 30,
+    height: 30,
+    borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: spacing.md,
   },
+  addr: { color: colors.secondaryLabel, marginTop: 1 },
 });

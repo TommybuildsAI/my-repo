@@ -5,7 +5,7 @@ import Constants from 'expo-constants';
 import { useData } from '@/context/DataContext';
 import { useLocations } from '@/context/LocationContext';
 import { MapFallback } from '@/components/MapFallback';
-import { colors, radius } from '@/theme/theme';
+import { colors, radius, type } from '@/theme/theme';
 
 interface Props {
   focusMemberId?: string; // if set, only show this member + their jobs
@@ -60,7 +60,7 @@ export function TeamMap({ focusMemberId }: Props) {
             coordinate={job.location}
             title={job.title}
             description={`${job.customerName} · ${job.address}`}
-            pinColor={job.status === 'in_progress' ? colors.statusInProgress : colors.priorityNormal}
+            pinColor={job.status === 'in_progress' ? colors.orange : colors.primary}
           />
         ))}
 
@@ -100,13 +100,13 @@ export function TeamMap({ focusMemberId }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.fill },
+  container: { flex: 1, backgroundColor: colors.gray5 },
   memberMarker: {
     width: 34,
     height: 34,
     borderRadius: 17,
     borderWidth: 2.5,
-    borderColor: '#FFFFFF',
+    borderColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -114,15 +114,15 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     shadowOffset: { width: 0, height: 1 },
   },
-  memberInitials: { color: colors.textInverse, fontSize: 12, fontWeight: '700' },
+  memberInitials: { color: colors.white, fontSize: 12, fontWeight: '700' },
   webNote: {
     position: 'absolute',
     top: 12,
     alignSelf: 'center',
-    backgroundColor: colors.card,
+    backgroundColor: colors.white,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: radius.pill,
   },
-  webNoteText: { fontSize: 13, color: colors.textSecondary },
+  webNoteText: { ...type.footnote, color: colors.secondaryLabel },
 });

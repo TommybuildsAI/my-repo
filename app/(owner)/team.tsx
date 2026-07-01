@@ -1,67 +1,56 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useData } from '@/context/DataContext';
 import { useSession } from '@/context/SessionContext';
 import { directThreadId } from '@/data/seed';
-import { TeamMemberRow } from '@/components/TeamMemberRow';
+import { Avatar } from '@/components/ui/Avatar';
+import { LargeTitle } from '@/components/ui/LargeTitle';
+import { ListSection, ListRow } from '@/components/ui/List';
 import { colors, spacing } from '@/theme/theme';
 
 export default function OwnerTeamScreen() {
   const { employees, jobsForMember } = useData();
   const { currentUser, logout } = useSession();
   const router = useRouter();
-  const navigation = useNavigation();
-
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      headerLargeTitle: true,
-      headerRight: () => (
-        <Pressable onPress={logout} hitSlop={10} style={{ marginRight: spacing.lg }}>
-          <Ionicons name="log-out-outline" size={24} color={colors.primary} />
-        </Pressable>
-      ),
-    });
-  }, [navigation, logout]);
+  const insets = useSafeAreaInsets();
 
   const activeJobFor = (memberId: string) =>
     jobsForMember(memberId).find((j) => j.status === 'in_progress') ??
     jobsForMember(memberId).find((j) => j.status === 'assigned');
 
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.greeting}>Hej {currentUser?.name.split(' ')[0]} 👋</Text>
-      <Text style={styles.subtitle}>{employees.length} medarbejdere på holdet</Text>
+  const subtitleFor = (memberId: string, title: string) => {
+    const active = activeJobFor(memberId);
+    if (!active) return title;
+    return active.status === 'in_progress' ? `I gang · ${active.title}` : `Næste · ${active.title}`;
+  };
 
-      <Text style={styles.sectionLabel}>MEDARBEJDERE</Text>
-      {employees.map((m) => {
-        const active = activeJobFor(m.id);
-        const openCount = jobsForMember(m.id).filter((j) => j.status !== 'done').length;
-        return (
-          <TeamMemberRow
-            key={m.id}
-            member={m}
-            activeJob={active}
-            jobCount={openCount}
-            onPress={() => router.push(`/chat/${directThreadId(m.id)}`)}
-          />
-        );
-      })}
-    </ScrollView>
+  return (
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top, paddingBottom: spacing.xxl }}>
+        <LargeTitle
+          title="Hold"
+          subtitle={`Hej ${currentUser?.name.split(' ')[0]} · ${employees.length} medarbejdere`}
+          action={{ icon: 'log-out-outline', onPress: logout }}
+        />
+
+        <ListSection separatorInset={60}>
+          {employees.map((m) => (
+            <ListRow
+              key={m.id}
+              leading={<Avatar name={m.name} color={m.avatarColor} size={38} />}
+              title={m.name}
+              subtitle={subtitleFor(m.id, m.title)}
+              onPress={() => router.push(`/chat/${directThreadId(m.id)}`)}
+            />
+          ))}
+        </ListSection>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
-  greeting: { fontSize: 26, fontWeight: '700', color: colors.text },
-  subtitle: { fontSize: 15, color: colors.textSecondary, marginTop: 2, marginBottom: spacing.md },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textTertiary,
-    marginBottom: spacing.sm,
-    marginLeft: spacing.xs,
-  },
+  container: { flex: 1, backgroundColor: colors.groupedBackground },
 });

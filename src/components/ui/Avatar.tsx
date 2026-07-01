@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, radius } from '@/theme/theme';
+import { colors } from '@/theme/theme';
 
 interface Props {
   name: string;
@@ -17,10 +17,7 @@ function initials(name: string): string {
 export function Avatar({ name, color = colors.primary, size = 40 }: Props) {
   return (
     <View
-      style={[
-        styles.avatar,
-        { width: size, height: size, borderRadius: radius.pill, backgroundColor: color },
-      ]}
+      style={[styles.avatar, { width: size, height: size, borderRadius: size / 2, backgroundColor: color }]}
     >
       <Text style={[styles.initials, { fontSize: size * 0.4 }]}>{initials(name)}</Text>
     </View>
@@ -29,5 +26,5 @@ export function Avatar({ name, color = colors.primary, size = 40 }: Props) {
 
 const styles = StyleSheet.create({
   avatar: { alignItems: 'center', justifyContent: 'center' },
-  initials: { color: colors.textInverse, fontWeight: '600' },
+  initials: { color: colors.white, fontWeight: '600' },
 });

@@ -4,11 +4,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '@/context/DataContext';
 import { useSession } from '@/context/SessionContext';
-import { TeamMemberRow } from '@/components/TeamMemberRow';
-import { colors, spacing, typography } from '@/theme/theme';
+import { Avatar } from '@/components/ui/Avatar';
+import { ListSection, ListRow } from '@/components/ui/List';
+import { colors, spacing, type } from '@/theme/theme';
 
 export default function LoginScreen() {
-  const { members, loading } = useData();
+  const { members } = useData();
   const { login } = useSession();
   const insets = useSafeAreaInsets();
 
@@ -16,58 +17,55 @@ export default function LoginScreen() {
   const employees = members.filter((m) => m.role === 'employee');
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + spacing.xl }]}>
-      <View style={styles.header}>
-        <View style={styles.logo}>
-          <Ionicons name="water" size={30} color={colors.textInverse} />
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 40, paddingBottom: insets.bottom + spacing.xl }}>
+        <View style={styles.header}>
+          <View style={styles.logo}>
+            <Ionicons name="water" size={34} color={colors.white} />
+          </View>
+          <Text style={[type.title1, styles.appName]}>VVS Hold</Text>
+          <Text style={[type.subhead, styles.tagline]}>Aarhus VVS & Varme</Text>
         </View>
-        <Text style={styles.appName}>VVS Hold</Text>
-        <Text style={styles.tagline}>Aarhus VVS & Varme</Text>
-      </View>
 
-      <Text style={styles.prompt}>Vælg din profil for at logge ind</Text>
+        {owner ? (
+          <ListSection header="Ejer" separatorInset={60}>
+            <ListRow
+              leading={<Avatar name={owner.name} color={owner.avatarColor} size={38} />}
+              title={owner.name}
+              subtitle={owner.title}
+              onPress={() => login(owner)}
+            />
+          </ListSection>
+        ) : null}
 
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}>
-        {owner && (
-          <>
-            <Text style={styles.sectionLabel}>EJER</Text>
-            <TeamMemberRow member={owner} onPress={() => login(owner)} />
-          </>
-        )}
-
-        <Text style={styles.sectionLabel}>MEDARBEJDERE</Text>
-        {employees.map((m) => (
-          <TeamMemberRow key={m.id} member={m} onPress={() => login(m)} />
-        ))}
-
-        {loading && <Text style={styles.loading}>Henter hold…</Text>}
+        <ListSection header="Medarbejdere" footer="Vælg en profil for at logge ind. Ingen adgangskode i denne demo." separatorInset={60}>
+          {employees.map((m) => (
+            <ListRow
+              key={m.id}
+              leading={<Avatar name={m.name} color={m.avatarColor} size={38} />}
+              title={m.name}
+              subtitle={m.title}
+              onPress={() => login(m)}
+            />
+          ))}
+        </ListSection>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, paddingHorizontal: spacing.lg },
+  container: { flex: 1, backgroundColor: colors.groupedBackground },
   header: { alignItems: 'center', marginBottom: spacing.xl },
   logo: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
+    width: 72,
+    height: 72,
+    borderRadius: 18,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
   },
-  appName: { ...typography.largeTitle, color: colors.text },
-  tagline: { fontSize: 15, color: colors.textSecondary, marginTop: 2 },
-  prompt: { fontSize: 15, color: colors.textSecondary, marginBottom: spacing.md },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textTertiary,
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-    marginLeft: spacing.xs,
-  },
-  loading: { textAlign: 'center', color: colors.textTertiary, marginTop: spacing.lg },
+  appName: { color: colors.label },
+  tagline: { color: colors.secondaryLabel, marginTop: 2 },
 });

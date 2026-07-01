@@ -7,12 +7,11 @@ export default function OwnerTabsLayout() {
   return (
     <Tabs
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textTertiary,
-        headerStyle: { backgroundColor: colors.background },
-        headerShadowVisible: false,
-        headerTitleStyle: { color: colors.text },
-        tabBarStyle: { backgroundColor: colors.card },
+        tabBarInactiveTintColor: colors.gray,
+        tabBarStyle: { backgroundColor: 'rgba(249,249,249,0.94)', borderTopColor: colors.separator },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '500' },
       }}
     >
       <Tabs.Screen
@@ -33,18 +32,14 @@ export default function OwnerTabsLayout() {
         name="jobs"
         options={{
           title: 'Opgaver',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="briefcase" color={color} size={size} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="briefcase" color={color} size={size} />,
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
           title: 'Chat',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubbles" color={color} size={size} />
-          ),
+          tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles" color={color} size={size} />,
         }}
       />
       <Tabs.Screen

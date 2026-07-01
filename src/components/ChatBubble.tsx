@@ -1,47 +1,63 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { ChatMessage } from '@/types/models';
-import { colors, radius, spacing } from '@/theme/theme';
+import { colors, spacing, type } from '@/theme/theme';
 import { formatTime } from '@/utils/format';
 
 interface Props {
   message: ChatMessage;
   mine: boolean;
-  senderName?: string; // shown for other people's messages in group threads
+  senderName?: string;
   showSender?: boolean;
 }
 
 export function ChatBubble({ message, mine, senderName, showSender }: Props) {
-  const isBrief = message.kind === 'brief';
-  return (
-    <View style={[styles.container, mine ? styles.alignRight : styles.alignLeft]}>
-      {!mine && showSender && senderName && (
-        <Text style={styles.sender}>{senderName}</Text>
-      )}
-      <View
-        style={[
-          styles.bubble,
-          mine ? styles.mine : styles.theirs,
-          isBrief && styles.brief,
-        ]}
-      >
-        <Text style={[styles.text, mine && !isBrief && styles.mineText]}>{message.text}</Text>
+  // Morning briefs render as a centred announcement card (iMessage-style note).
+  if (message.kind === 'brief') {
+    const body = message.text.replace(/^☀️\s*Morgenbrief\s*\n?/, '');
+    return (
+      <View style={styles.briefWrap}>
+        <View style={styles.briefCard}>
+          <Text style={[type.caption1, styles.briefLabel]}>☀️ MORGENBRIEF</Text>
+          <Text style={[type.subhead, styles.briefBody]}>{body}</Text>
+          <Text style={[type.caption2, styles.briefTime]}>{formatTime(message.createdAt)}</Text>
+        </View>
       </View>
-      <Text style={styles.time}>{formatTime(message.createdAt)}</Text>
+    );
+  }
+
+  return (
+    <View style={[styles.container, mine ? styles.right : styles.left]}>
+      {!mine && showSender && senderName ? (
+        <Text style={[type.caption1, styles.sender]}>{senderName}</Text>
+      ) : null}
+      <View style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
+        <Text style={[type.body, mine ? styles.mineText : styles.theirsText]}>{message.text}</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { marginBottom: spacing.md, maxWidth: '82%' },
-  alignRight: { alignSelf: 'flex-end', alignItems: 'flex-end' },
-  alignLeft: { alignSelf: 'flex-start', alignItems: 'flex-start' },
-  sender: { fontSize: 12, color: colors.textTertiary, marginBottom: 2, marginLeft: 12 },
-  bubble: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: radius.lg },
-  mine: { backgroundColor: colors.primary, borderBottomRightRadius: 4 },
-  theirs: { backgroundColor: colors.card, borderBottomLeftRadius: 4 },
-  brief: { backgroundColor: colors.brief + '18', borderWidth: 1, borderColor: colors.brief + '55' },
-  text: { fontSize: 16, color: colors.text, lineHeight: 21 },
-  mineText: { color: colors.textInverse },
-  time: { fontSize: 11, color: colors.textTertiary, marginTop: 2, marginHorizontal: 6 },
+  container: { marginBottom: 2, maxWidth: '78%' },
+  right: { alignSelf: 'flex-end', alignItems: 'flex-end' },
+  left: { alignSelf: 'flex-start', alignItems: 'flex-start' },
+  sender: { color: colors.secondaryLabel, marginBottom: 2, marginLeft: 12 },
+  bubble: { paddingHorizontal: 13, paddingVertical: 8, borderRadius: 20 },
+  mine: { backgroundColor: colors.primary },
+  theirs: { backgroundColor: '#E9E9EB' }, // iOS incoming-bubble grey
+  mineText: { color: colors.white },
+  theirsText: { color: colors.label },
+
+  briefWrap: { alignItems: 'center', marginVertical: spacing.sm },
+  briefCard: {
+    backgroundColor: colors.gray6,
+    borderRadius: 14,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    maxWidth: '92%',
+  },
+  briefLabel: { color: colors.indigo, fontWeight: '700', letterSpacing: 0.5, marginBottom: 4 },
+  briefBody: { color: colors.label },
+  briefTime: { color: colors.tertiaryLabel, marginTop: 6, textAlign: 'right' },
 });

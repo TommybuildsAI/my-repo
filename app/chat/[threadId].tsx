@@ -5,7 +5,6 @@ import {
   Platform,
   Pressable,
   StyleSheet,
-  Text,
   TextInput,
   View,
 } from 'react-native';
@@ -17,7 +16,7 @@ import { useData } from '@/context/DataContext';
 import { useSession } from '@/context/SessionContext';
 import { ChatBubble } from '@/components/ChatBubble';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { colors, radius, spacing } from '@/theme/theme';
+import { colors, spacing, type } from '@/theme/theme';
 import type { ChatMessage } from '@/types/models';
 
 export default function ChatThreadScreen() {
@@ -72,21 +71,19 @@ export default function ChatThreadScreen() {
         />
       )}
 
-      <View style={[styles.inputBar, { paddingBottom: insets.bottom || spacing.sm }]}>
-        <TextInput
-          style={styles.input}
-          placeholder="Besked…"
-          placeholderTextColor={colors.textTertiary}
-          value={text}
-          onChangeText={setText}
-          multiline
-        />
-        <Pressable
-          onPress={handleSend}
-          disabled={!text.trim()}
-          style={[styles.sendButton, !text.trim() && styles.sendDisabled]}
-        >
-          <Ionicons name="arrow-up" size={20} color={colors.textInverse} />
+      <View style={[styles.inputBar, { paddingBottom: (insets.bottom || spacing.sm) }]}>
+        <View style={styles.inputWrap}>
+          <TextInput
+            style={[type.body, styles.input]}
+            placeholder="Besked"
+            placeholderTextColor={colors.placeholder}
+            value={text}
+            onChangeText={setText}
+            multiline
+          />
+        </View>
+        <Pressable onPress={handleSend} disabled={!text.trim()} style={[styles.send, !text.trim() && styles.sendOff]}>
+          <Ionicons name="arrow-up" size={20} color={colors.white} />
         </Pressable>
       </View>
     </KeyboardAvoidingView>
@@ -95,7 +92,7 @@ export default function ChatThreadScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  list: { padding: spacing.lg },
+  list: { padding: spacing.lg, gap: 2 },
   inputBar: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -104,25 +101,27 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.separator,
-    backgroundColor: colors.card,
+    backgroundColor: colors.background,
   },
-  input: {
+  inputWrap: {
     flex: 1,
-    backgroundColor: colors.fillSecondary,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 10,
-    fontSize: 16,
-    color: colors.text,
-    maxHeight: 120,
-  },
-  sendButton: {
-    width: 36,
-    height: 36,
+    minHeight: 36,
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.gray3,
     borderRadius: 18,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+  },
+  input: { color: colors.label, maxHeight: 120, padding: 0 },
+  send: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 1,
   },
-  sendDisabled: { backgroundColor: colors.textTertiary },
+  sendOff: { backgroundColor: colors.gray3 },
 });

@@ -40,18 +40,22 @@ function RootNavigator() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        headerTintColor: colors.primary,
+        headerTitleStyle: { color: colors.label, fontWeight: '600' },
+        headerStyle: { backgroundColor: colors.background },
+        headerShadowVisible: false,
+        headerBackTitle: 'Tilbage',
+        contentStyle: { backgroundColor: colors.groupedBackground },
+      }}
+    >
       <Stack.Screen name="index" />
       <Stack.Screen name="(owner)" />
       <Stack.Screen name="(employee)" />
-      <Stack.Screen
-        name="job/[id]"
-        options={{ headerShown: true, title: 'Opgave', presentation: 'card' }}
-      />
-      <Stack.Screen
-        name="chat/[threadId]"
-        options={{ headerShown: true, title: 'Chat' }}
-      />
+      <Stack.Screen name="job/[id]" options={{ headerShown: true, title: 'Opgave' }} />
+      <Stack.Screen name="chat/[threadId]" options={{ headerShown: true, title: 'Chat' }} />
     </Stack>
   );
 }

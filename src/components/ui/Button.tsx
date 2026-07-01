@@ -1,9 +1,9 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, radius, spacing } from '@/theme/theme';
+import { colors, radius, type } from '@/theme/theme';
 
-type Variant = 'primary' | 'secondary' | 'success' | 'danger';
+type Variant = 'filled' | 'tinted' | 'gray' | 'success';
 
 interface Props {
   title: string;
@@ -15,16 +15,21 @@ interface Props {
   style?: ViewStyle;
 }
 
-const bg: Record<Variant, string> = {
-  primary: colors.primary,
-  secondary: colors.fill,
-  success: colors.statusDone,
-  danger: colors.danger,
-};
+/** iOS-style buttons: 50pt tall, filled or tinted (translucent accent fill). */
+export function Button({ title, onPress, variant = 'filled', icon, disabled, loading, style }: Props) {
+  const bg: Record<Variant, string> = {
+    filled: colors.primary,
+    tinted: 'rgba(0,122,255,0.15)',
+    gray: colors.gray6,
+    success: colors.green,
+  };
+  const fg: Record<Variant, string> = {
+    filled: colors.white,
+    tinted: colors.primary,
+    gray: colors.primary,
+    success: colors.white,
+  };
 
-export function Button({ title, onPress, variant = 'primary', icon, disabled, loading, style }: Props) {
-  const isSecondary = variant === 'secondary';
-  const fg = isSecondary ? colors.primary : colors.textInverse;
   return (
     <Pressable
       onPress={onPress}
@@ -38,11 +43,11 @@ export function Button({ title, onPress, variant = 'primary', icon, disabled, lo
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={fg} />
+        <ActivityIndicator color={fg[variant]} />
       ) : (
         <>
-          {icon && <Ionicons name={icon} size={18} color={fg} />}
-          <Text style={[styles.title, { color: fg }]}>{title}</Text>
+          {icon ? <Ionicons name={icon} size={19} color={fg[variant]} /> : null}
+          <Text style={[type.headline, { color: fg[variant] }]}>{title}</Text>
         </>
       )}
     </Pressable>
@@ -51,15 +56,14 @@ export function Button({ title, onPress, variant = 'primary', icon, disabled, lo
 
 const styles = StyleSheet.create({
   button: {
+    height: 50,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: 14,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.md,
+    gap: 6,
+    paddingHorizontal: 16,
+    borderRadius: radius.button,
   },
   disabled: { opacity: 0.4 },
-  pressed: { opacity: 0.7 },
-  title: { fontSize: 17, fontWeight: '600' },
+  pressed: { opacity: 0.8 },
 });

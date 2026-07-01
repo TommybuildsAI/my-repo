@@ -1,13 +1,14 @@
 import React from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useData } from '@/context/DataContext';
 import { useSession } from '@/context/SessionContext';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
-import { PriorityBadge, StatusBadge } from '@/components/StatusBadge';
-import { colors, radius, spacing } from '@/theme/theme';
+import { ListSection, ListRow, Cell } from '@/components/ui/List';
+import { StatusBadge, PriorityBadge } from '@/components/StatusBadge';
+import { colors, spacing, type } from '@/theme/theme';
 import { formatSchedule } from '@/utils/format';
 import type { JobStatus } from '@/types/models';
 
@@ -16,7 +17,6 @@ export default function JobDetailScreen() {
   const { jobs, employees, memberById, assignJob, updateJobStatus } = useData();
   const { role, currentUser } = useSession();
   const navigation = useNavigation();
-  const router = useRouter();
   const [picking, setPicking] = React.useState(false);
 
   const job = jobs.find((j) => j.id === id);
@@ -28,7 +28,7 @@ export default function JobDetailScreen() {
   if (!job) {
     return (
       <View style={styles.center}>
-        <Text style={styles.missing}>Opgaven blev ikke fundet.</Text>
+        <Text style={[type.body, { color: colors.secondaryLabel }]}>Opgaven blev ikke fundet.</Text>
       </View>
     );
   }
@@ -36,220 +36,142 @@ export default function JobDetailScreen() {
   const assignee = memberById(job.assignedToId);
   const isOwner = role === 'owner';
   const isMine = job.assignedToId === currentUser?.id;
-
   const setStatus = (status: JobStatus) => updateJobStatus(job.id, status);
-
   const openMaps = () => {
     const q = encodeURIComponent(job.address);
     Linking.openURL(`http://maps.apple.com/?q=${q}`).catch(() => {});
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header card */}
-      <View style={styles.card}>
-        <View style={styles.headerRow}>
-          <Text style={styles.title}>{job.title}</Text>
-          <PriorityBadge priority={job.priority} />
-        </View>
-        <StatusBadge status={job.status} />
-        <Text style={styles.description}>{job.description}</Text>
-      </View>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: spacing.md, paddingBottom: spacing.xxl }}>
+      {/* Summary */}
+      <ListSection>
+        <Cell>
+          <View style={styles.summary}>
+            <Text style={[type.title3, styles.title]}>{job.title}</Text>
+            <View style={styles.badges}>
+              <StatusBadge status={job.status} />
+              <PriorityBadge priority={job.priority} />
+            </View>
+            <Text style={[type.subhead, styles.desc]}>{job.description}</Text>
+          </View>
+        </Cell>
+      </ListSection>
 
-      {/* Customer & location */}
-      <View style={styles.card}>
-        <InfoRow icon="person-outline" label="Kunde" value={job.customerName} />
-        <Divider />
-        <Pressable onPress={openMaps}>
-          <InfoRow icon="location-outline" label="Adresse" value={job.address} action="Vis kort" />
-        </Pressable>
-        <Divider />
-        <InfoRow icon="time-outline" label="Planlagt" value={formatSchedule(job.scheduledFor)} />
-        <Divider />
-        <InfoRow icon="hourglass-outline" label="Estimat" value={`${job.estimatedHours} timer`} />
-        <Divider />
-        <InfoRow icon="pricetag-outline" label="CRM- id" value={job.crmId} />
-      </View>
+      {/* Details */}
+      <ListSection header="Detaljer">
+        <ListRow title="Kunde" value={job.customerName} accessory="none" />
+        <Cell onPress={openMaps}>
+          <View style={{ flex: 1 }}>
+            <Text style={type.body}>Adresse</Text>
+            <Text style={[type.footnote, styles.sub]}>{job.address}</Text>
+          </View>
+          <Text style={[type.body, styles.link]}>Kort</Text>
+          <Ionicons name="chevron-forward" size={17} color={colors.tertiaryLabel} style={styles.chev} />
+        </Cell>
+        <ListRow title="Planlagt" value={formatSchedule(job.scheduledFor)} accessory="none" />
+        <ListRow title="Estimat" value={`${job.estimatedHours} ${job.estimatedHours === 1 ? 'time' : 'timer'}`} accessory="none" />
+        <ListRow title="CRM-id" value={job.crmId} accessory="none" />
+      </ListSection>
 
       {/* Assignment */}
-      <Text style={styles.sectionLabel}>TILDELT TIL</Text>
-      <View style={styles.card}>
+      <ListSection header="Tildelt til" separatorInset={60}>
         {assignee ? (
-          <View style={styles.assigneeRow}>
-            <Avatar name={assignee.name} color={assignee.avatarColor} size={40} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.assigneeName}>{assignee.name}</Text>
-              <Text style={styles.assigneeTitle}>{assignee.title}</Text>
-            </View>
-          </View>
+          <ListRow
+            leading={<Avatar name={assignee.name} color={assignee.avatarColor} size={38} />}
+            title={assignee.name}
+            subtitle={assignee.title}
+            accessory="none"
+          />
         ) : (
-          <Text style={styles.unassigned}>Endnu ikke tildelt</Text>
+          <ListRow title="Ikke tildelt" tint={false} accessory="none" />
         )}
-
-        {isOwner && (
-          <View style={{ marginTop: spacing.md }}>
-            <Button
-              title={assignee ? 'Skift medarbejder' : 'Tildel medarbejder'}
-              variant="secondary"
-              icon="people-outline"
-              onPress={() => setPicking((p) => !p)}
-            />
-            {picking && (
-              <View style={styles.picker}>
-                {employees.map((m) => (
-                  <Pressable
-                    key={m.id}
-                    style={styles.pickRow}
-                    onPress={() => {
-                      assignJob(job.id, m.id);
-                      setPicking(false);
-                    }}
-                  >
-                    <Avatar name={m.name} color={m.avatarColor} size={32} />
-                    <Text style={styles.pickName}>{m.name}</Text>
-                    {job.assignedToId === m.id && (
+        {isOwner ? (
+          <ListRow
+            title={assignee ? 'Skift medarbejder' : 'Tildel medarbejder'}
+            tint
+            onPress={() => setPicking((p) => !p)}
+            accessory="none"
+            rightNode={
+              <Ionicons name={picking ? 'chevron-up' : 'chevron-down'} size={17} color={colors.primary} />
+            }
+          />
+        ) : null}
+        {isOwner && picking
+          ? [
+              ...employees.map((m) => (
+                <ListRow
+                  key={m.id}
+                  leading={<Avatar name={m.name} color={m.avatarColor} size={32} />}
+                  title={m.name}
+                  onPress={() => {
+                    assignJob(job.id, m.id);
+                    setPicking(false);
+                  }}
+                  accessory="none"
+                  rightNode={
+                    job.assignedToId === m.id ? (
                       <Ionicons name="checkmark" size={20} color={colors.primary} />
-                    )}
-                  </Pressable>
-                ))}
-                {assignee && (
-                  <Pressable
-                    style={styles.pickRow}
-                    onPress={() => {
-                      assignJob(job.id, null);
-                      setPicking(false);
-                    }}
-                  >
-                    <Ionicons name="close-circle-outline" size={32} color={colors.danger} />
-                    <Text style={[styles.pickName, { color: colors.danger }]}>Fjern tildeling</Text>
-                  </Pressable>
-                )}
-              </View>
-            )}
-          </View>
-        )}
-      </View>
+                    ) : undefined
+                  }
+                />
+              )),
+              assignee ? (
+                <ListRow
+                  key="remove"
+                  title="Fjern tildeling"
+                  destructive
+                  onPress={() => {
+                    assignJob(job.id, null);
+                    setPicking(false);
+                  }}
+                  accessory="none"
+                />
+              ) : null,
+            ]
+          : null}
+      </ListSection>
 
       {/* Status actions */}
-      <Text style={styles.sectionLabel}>STATUS</Text>
-      <View style={styles.card}>
-        {(isOwner || isMine) ? (
-          <View style={{ gap: spacing.sm }}>
-            {job.status === 'assigned' && (
+      <View style={styles.actions}>
+        {isOwner || isMine ? (
+          <>
+            {job.status === 'assigned' ? (
               <Button title="Start opgave" icon="play" onPress={() => setStatus('in_progress')} />
-            )}
-            {job.status === 'in_progress' && (
-              <Button
-                title="Marker som færdig"
-                icon="checkmark-done"
-                variant="success"
-                onPress={() => setStatus('done')}
-              />
-            )}
-            {job.status === 'done' && (
-              <View style={styles.doneBanner}>
-                <Ionicons name="checkmark-circle" size={22} color={colors.statusDone} />
-                <Text style={styles.doneText}>Opgaven er markeret færdig</Text>
-              </View>
-            )}
-            {job.status === 'done' && (
-              <Button
-                title="Genåbn opgave"
-                variant="secondary"
-                icon="refresh"
-                onPress={() => setStatus('in_progress')}
-              />
-            )}
-          </View>
+            ) : null}
+            {job.status === 'in_progress' ? (
+              <Button title="Marker som færdig" icon="checkmark-done" variant="success" onPress={() => setStatus('done')} />
+            ) : null}
+            {job.status === 'done' ? (
+              <>
+                <View style={styles.doneBanner}>
+                  <Ionicons name="checkmark-circle" size={20} color={colors.green} />
+                  <Text style={[type.subhead, styles.doneText]}>Opgaven er færdig</Text>
+                </View>
+                <Button title="Genåbn opgave" variant="gray" icon="refresh" onPress={() => setStatus('in_progress')} />
+              </>
+            ) : null}
+          </>
         ) : (
-          <Text style={styles.unassigned}>Kun den tildelte medarbejder kan opdatere status.</Text>
+          <Text style={[type.footnote, styles.hint]}>Kun den tildelte medarbejder kan opdatere status.</Text>
         )}
       </View>
-
-      <Pressable style={styles.mapLink} onPress={() => router.back()}>
-        <Ionicons name="chevron-back" size={16} color={colors.primary} />
-        <Text style={styles.mapLinkText}>Tilbage</Text>
-      </Pressable>
     </ScrollView>
   );
 }
 
-function InfoRow({
-  icon,
-  label,
-  value,
-  action,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  value: string;
-  action?: string;
-}) {
-  return (
-    <View style={styles.infoRow}>
-      <Ionicons name={icon} size={18} color={colors.textTertiary} />
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue} numberOfLines={2}>
-        {value}
-      </Text>
-      {action && <Text style={styles.infoAction}>{action}</Text>}
-    </View>
-  );
-}
-
-function Divider() {
-  return <View style={styles.divider} />;
-}
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  missing: { color: colors.textSecondary, fontSize: 16 },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 22, fontWeight: '700', color: colors.text, flex: 1, marginRight: spacing.sm },
-  description: { fontSize: 15, color: colors.textSecondary, lineHeight: 21 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: 6 },
-  infoLabel: { fontSize: 15, color: colors.textSecondary, width: 78 },
-  infoValue: { fontSize: 15, color: colors.text, flex: 1, fontWeight: '500' },
-  infoAction: { fontSize: 14, color: colors.primary, fontWeight: '500' },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.separator, marginLeft: 26 },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textTertiary,
-    marginBottom: spacing.sm,
-    marginTop: spacing.sm,
-    marginLeft: spacing.xs,
-  },
-  assigneeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  assigneeName: { fontSize: 17, fontWeight: '600', color: colors.text },
-  assigneeTitle: { fontSize: 14, color: colors.textSecondary },
-  unassigned: { fontSize: 15, color: colors.textTertiary },
-  picker: { marginTop: spacing.sm, gap: 2 },
-  pickRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingVertical: 10,
-    paddingHorizontal: 4,
-  },
-  pickName: { flex: 1, fontSize: 16, color: colors.text },
-  doneBanner: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  doneText: { fontSize: 16, color: colors.statusDone, fontWeight: '500' },
-  mapLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 2,
-    marginTop: spacing.sm,
-  },
-  mapLinkText: { fontSize: 16, color: colors.primary },
+  container: { flex: 1, backgroundColor: colors.groupedBackground },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.groupedBackground },
+  summary: { flex: 1, gap: spacing.sm, paddingVertical: 2 },
+  title: { color: colors.label },
+  badges: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  desc: { color: colors.secondaryLabel },
+  sub: { color: colors.secondaryLabel, marginTop: 1 },
+  link: { color: colors.primary },
+  chev: { marginLeft: 6, marginRight: -4 },
+  actions: { paddingHorizontal: spacing.lg, gap: spacing.sm, marginTop: spacing.sm },
+  doneBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, paddingVertical: spacing.sm },
+  doneText: { color: colors.green, fontWeight: '500' },
+  hint: { color: colors.secondaryLabel, textAlign: 'center' },
 });

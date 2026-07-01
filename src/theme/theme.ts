@@ -1,46 +1,72 @@
 /**
- * iOS-flavoured design tokens. Colours mirror Apple's system palette so the
- * app feels native without pulling in a heavy UI library.
+ * iOS design tokens, matched to Apple's Human Interface Guidelines (light mode).
+ * Colours are the real UIKit system colours; typography follows the SF Pro
+ * Dynamic Type scale. On iOS the default React Native font already *is* SF Pro,
+ * so we only set sizes/weights — never a custom family.
+ *
+ * Refs: developer.apple.com/design/human-interface-guidelines/color + typography
  */
 
 export const colors = {
-  // Brand / accent
-  primary: '#0A84FF', // iOS system blue
-  primaryDark: '#0060DF',
+  // System accent colours (light mode)
+  primary: '#007AFF', // systemBlue
+  green: '#34C759', // systemGreen
+  orange: '#FF9500', // systemOrange
+  red: '#FF3B30', // systemRed
+  indigo: '#5856D6', // systemIndigo
+  yellow: '#FFCC00', // systemYellow
 
-  // Backgrounds (grouped list style)
-  background: '#F2F2F7', // iOS grouped background
-  card: '#FFFFFF',
-  cardElevated: '#FFFFFF',
+  // Grouped-list backgrounds (the classic iOS Settings look)
+  groupedBackground: '#F2F2F7', // systemGroupedBackground
+  groupedCard: '#FFFFFF', // secondarySystemGroupedBackground (cells)
+  background: '#FFFFFF', // systemBackground
 
-  // Separators & fills
-  separator: '#C6C6C8',
-  fill: '#E5E5EA',
-  fillSecondary: '#EFEFF4',
+  // Grays
+  gray: '#8E8E93', // systemGray
+  gray2: '#AEAEB2',
+  gray3: '#C7C7CC',
+  gray4: '#D1D1D6',
+  gray5: '#E5E5EA',
+  gray6: '#F2F2F7',
 
-  // Text
-  text: '#1C1C1E',
-  textSecondary: '#6E6E73',
-  textTertiary: '#8E8E93',
-  textInverse: '#FFFFFF',
+  // Labels (Apple uses translucent blacks so they sit correctly on any fill)
+  label: '#000000',
+  secondaryLabel: 'rgba(60,60,67,0.6)',
+  tertiaryLabel: 'rgba(60,60,67,0.3)',
+  quaternaryLabel: 'rgba(60,60,67,0.18)',
+  placeholder: 'rgba(60,60,67,0.3)',
 
-  // Status colours
-  statusAssigned: '#8E8E93', // gray
-  statusInProgress: '#FF9F0A', // orange
-  statusDone: '#34C759', // green
+  // Separators
+  separator: 'rgba(60,60,67,0.29)',
+  opaqueSeparator: '#C6C6C8',
 
-  // Priority
-  priorityHigh: '#FF3B30',
-  priorityNormal: '#0A84FF',
-  priorityLow: '#8E8E93',
+  // Fills (for pressed states, chips)
+  fill: 'rgba(120,120,128,0.2)',
+  secondaryFill: 'rgba(120,120,128,0.16)',
+  tertiaryFill: 'rgba(120,120,128,0.12)',
 
-  // Misc
-  online: '#34C759',
-  offline: '#C7C7CC',
-  danger: '#FF3B30',
-  brief: '#5E5CE6', // indigo for morning-brief messages
+  // Convenience
+  white: '#FFFFFF',
+  pressedCell: '#D1D1D6', // systemGray4 — cell highlight on tap
+
+  // Job status (mapped to system colours)
+  statusAssigned: '#8E8E93',
+  statusInProgress: '#FF9500',
+  statusDone: '#34C759',
 } as const;
 
+// Avatar tints — drawn from Apple's system palette so they feel native.
+export const avatarPalette = [
+  '#FF9500', // orange
+  '#34C759', // green
+  '#5856D6', // indigo
+  '#FF2D55', // pink
+  '#5AC8FA', // cyan
+  '#AF52DE', // purple
+  '#FF3B30', // red
+] as const;
+
+// 8pt-based spacing; 16 is the standard iOS content margin.
 export const spacing = {
   xs: 4,
   sm: 8,
@@ -51,29 +77,26 @@ export const spacing = {
 } as const;
 
 export const radius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
+  cell: 10, // grouped-list corner radius
+  card: 12,
+  button: 12,
   pill: 999,
 } as const;
 
-export const typography = {
-  largeTitle: { fontSize: 34, fontWeight: '700' as const },
-  title: { fontSize: 22, fontWeight: '700' as const },
-  headline: { fontSize: 17, fontWeight: '600' as const },
-  body: { fontSize: 17, fontWeight: '400' as const },
-  callout: { fontSize: 16, fontWeight: '400' as const },
-  subhead: { fontSize: 15, fontWeight: '400' as const },
-  footnote: { fontSize: 13, fontWeight: '400' as const },
-  caption: { fontSize: 12, fontWeight: '400' as const },
+/**
+ * SF Pro Dynamic Type scale (default content size). Weights stick to
+ * Regular/Medium/Semibold/Bold — Apple discourages lighter weights.
+ */
+export const type = {
+  largeTitle: { fontSize: 34, lineHeight: 41, fontWeight: '700' as const, letterSpacing: 0.37 },
+  title1: { fontSize: 28, lineHeight: 34, fontWeight: '700' as const, letterSpacing: 0.36 },
+  title2: { fontSize: 22, lineHeight: 28, fontWeight: '700' as const, letterSpacing: 0.35 },
+  title3: { fontSize: 20, lineHeight: 25, fontWeight: '600' as const, letterSpacing: 0.38 },
+  headline: { fontSize: 17, lineHeight: 22, fontWeight: '600' as const, letterSpacing: -0.43 },
+  body: { fontSize: 17, lineHeight: 22, fontWeight: '400' as const, letterSpacing: -0.43 },
+  callout: { fontSize: 16, lineHeight: 21, fontWeight: '400' as const, letterSpacing: -0.31 },
+  subhead: { fontSize: 15, lineHeight: 20, fontWeight: '400' as const, letterSpacing: -0.23 },
+  footnote: { fontSize: 13, lineHeight: 18, fontWeight: '400' as const, letterSpacing: -0.08 },
+  caption1: { fontSize: 12, lineHeight: 16, fontWeight: '400' as const, letterSpacing: 0 },
+  caption2: { fontSize: 11, lineHeight: 13, fontWeight: '400' as const, letterSpacing: 0.06 },
 } as const;
-
-export const avatarPalette = [
-  '#FF9F0A',
-  '#0A84FF',
-  '#34C759',
-  '#FF375F',
-  '#5E5CE6',
-  '#BF5AF2',
-  '#64D2FF',
-] as const;
