@@ -17,14 +17,19 @@ Built with **Expo (React Native + TypeScript)** and **Expo Router**. This MVP ru
 | **Team-chat** – fælleschat + 1-til-1 samtaler | `app/chat/[threadId].tsx` |
 | **Morgenbrief** – sendes til fælleschat **og** til hver medarbejder personligt | `app/(owner)/brief.tsx` |
 
-## Kør appen (kræver Mac/iPhone med Expo Go)
+## Kør appen (iPhone eller Android med Expo Go)
+
+Kør udviklingsserveren på din **computer** (ikke på telefonen):
 
 ```bash
 npm install
-npx expo start        # tilføj --tunnel hvis telefon og computer er på forskellige netværk
+npx expo start        # tilføj --tunnel hvis telefon og computer er på forskellige netværk / wifi
 ```
 
-Scan QR-koden med **Expo Go** (iOS) eller iPhone-kameraet.
+- **iPhone:** scan QR-koden med kameraet, eller med **Expo Go**.
+- **Android:** åbn **Expo Go** → serveren dukker op under *Development servers* (tryk på den), eller tryk **Scan QR code** og scan koden i terminalen. Alternativt skriv `a` i terminalen for at åbne på en tilsluttet Android-enhed/emulator.
+
+> Telefon og computer skal være på **samme wifi**. Er de ikke det (fx mobildata), så kør `npx expo start --tunnel`.
 
 Andre scripts:
 
@@ -71,6 +76,9 @@ Appen importerer kun `crmService`. Skift fra mock til en rigtig API er en enkelt
 
 ### Live location
 `src/services/locationSim.ts` flytter hver medarbejder lidt mod deres aktive opgave hvert ~2. sekund (ren JS, virker i Expo Go). Den aktuelle bruger kan bruge rigtig GPS via `expo-location`; resten er simuleret.
+
+## Platforme
+Appen kører på **både iOS og Android** i Expo Go fra samme kodebase. Kortet bruger Apple Maps på iOS og Google Maps på Android — begge virker i Expo Go uden API-nøgle. (En selvstændig Android-build kræver senere din egen Google Maps API-nøgle i `app.json`.)
 
 ## Bemærk
 Dette er en MVP med lokale mock-data. Næste skridt mod produktion: rigtig backend (auth, realtids-chat, live GPS-deling) og CRM-integration bag den eksisterende `crmService`-grænseflade.
